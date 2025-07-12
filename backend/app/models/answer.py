@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 from ..database import Base
 from ..schemas import answer as answer_schema
 
+
 class Answer(Base):
     __tablename__ = "answers"
 
@@ -18,16 +19,23 @@ class Answer(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationships
+    # Relationships - Fixed with foreign_keys specification
     question = relationship("Question", back_populates="answers")
-    author = relationship("User", back_populates="answers")
-    votes = relationship("Vote", back_populates="answer", cascade="all, delete-orphan")
+    author = relationship("User", foreign_keys=[
+                          author_id], back_populates="answers")
+    accepter = relationship("User", foreign_keys=[
+                            accepted_by], back_populates="accepted_answers")
+    votes = relationship("Vote", back_populates="answer",
+                         cascade="all, delete-orphan")
+
 
 def get_answers(db, skip: int = 0, limit: int = 100):
     return db.query(Answer).offset(skip).limit(limit).all()
 
+
 def get_answer(db, answer_id: int):
     return db.query(Answer).filter(Answer.id == answer_id).first()
+
 
 def create_answer(db, answer: answer_schema.AnswerCreate):
     db_answer = Answer(
@@ -40,16 +48,18 @@ def create_answer(db, answer: answer_schema.AnswerCreate):
     db.refresh(db_answer)
     return db_answer
 
+
 def update_answer(db, answer_id: int, answer: answer_schema.AnswerUpdate):
     db_answer = get_answer(db, answer_id)
     if db_answer:
         update_data = answer.dict(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_answer, field, value)
-        
+
         db.commit()
         db.refresh(db_answer)
     return db_answer
+
 
 def delete_answer(db, answer_id: int):
     db_answer = get_answer(db, answer_id)
@@ -58,11 +68,14 @@ def delete_answer(db, answer_id: int):
         db.commit()
     return db_answer
 
+
 def get_answers_by_question(db, question_id: int, skip: int = 0, limit: int = 100):
     return db.query(Answer).filter(Answer.question_id == question_id).offset(skip).limit(limit).all()
 
+
 def get_answers_by_author(db, author_id: int, skip: int = 0, limit: int = 100):
     return db.query(Answer).filter(Answer.author_id == author_id).offset(skip).limit(limit).all()
+
 
 def accept_answer(db, answer_id: int):
     db_answer = get_answer(db, answer_id)
@@ -72,4 +85,4 @@ def accept_answer(db, answer_id: int):
         db_answer.question.is_answered = True
         db.commit()
         db.refresh(db_answer)
-    return db_answer 
+    return db_answer

@@ -7,6 +7,7 @@ from ..schemas import user as user_schema
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -21,28 +22,40 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationships
+    # Relationships - Fixed with proper foreign_keys
     questions = relationship("Question", back_populates="author")
-    answers = relationship("Answer", back_populates="author")
+    answers = relationship(
+        "Answer", foreign_keys="Answer.author_id", back_populates="author")
+    accepted_answers = relationship(
+        "Answer", foreign_keys="Answer.accepted_by", back_populates="accepter")
     votes = relationship("Vote", back_populates="user")
+    notifications = relationship(
+        "Notification", foreign_keys="Notification.user_id", back_populates="user")
+
 
 def get_password_hash(password: str):
     return pwd_context.hash(password)
 
+
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_users(db, skip: int = 0, limit: int = 100):
     return db.query(User).offset(skip).limit(limit).all()
 
+
 def get_user(db, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
+
 
 def get_user_by_email(db, email: str):
     return db.query(User).filter(User.email == email).first()
 
+
 def get_user_by_username(db, username: str):
     return db.query(User).filter(User.username == username).first()
+
 
 def create_user(db, user: user_schema.UserCreate):
     hashed_password = get_password_hash(user.password)
@@ -57,19 +70,22 @@ def create_user(db, user: user_schema.UserCreate):
     db.refresh(db_user)
     return db_user
 
+
 def update_user(db, user_id: int, user: user_schema.UserUpdate):
     db_user = get_user(db, user_id)
     if db_user:
         update_data = user.dict(exclude_unset=True)
         if "password" in update_data:
-            update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
-        
+            update_data["hashed_password"] = get_password_hash(
+                update_data.pop("password"))
+
         for field, value in update_data.items():
             setattr(db_user, field, value)
-        
+
         db.commit()
         db.refresh(db_user)
     return db_user
+
 
 def delete_user(db, user_id: int):
     db_user = get_user(db, user_id)
@@ -78,10 +94,11 @@ def delete_user(db, user_id: int):
         db.commit()
     return db_user
 
+
 def authenticate_user(db, email: str, password: str):
     user = get_user_by_email(db, email)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
         return False
-    return user 
+    return user

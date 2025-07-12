@@ -33,3 +33,8 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id: Optional[int] = None
     username: Optional[str] = None 
+
+# Add UserLogin schema for login endpoint
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
