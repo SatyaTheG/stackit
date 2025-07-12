@@ -16,15 +16,20 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     password: Optional[str] = None
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
 class User(UserBase):
     id: int
     is_active: bool
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: datetime
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+# Auth schemas
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    user_id: Optional[int] = None
+    username: Optional[str] = None 
