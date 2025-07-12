@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey, Boolean, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..database import Base
@@ -12,6 +12,9 @@ class Answer(Base):
     question_id = Column(Integer, ForeignKey("questions.id"))
     author_id = Column(Integer, ForeignKey("users.id"))
     is_accepted = Column(Boolean, default=False)
+    accepted_at = Column(DateTime, nullable=True)
+    accepted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    images = Column(String, nullable=True)  # JSON array of image URLs
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
