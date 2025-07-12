@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api import questions, answers, users, votes, tags, notifications
+from .api import questions, answers, users, votes, tags, ai_summary, notifications
 from .database import engine, Base
 from .config import settings
 
@@ -28,6 +28,7 @@ app.include_router(answers.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(votes.router, prefix="/api/v1")
 app.include_router(tags.router, prefix="/api/v1")
+app.include_router(ai_summary.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 
 @app.get("/")
