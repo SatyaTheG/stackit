@@ -3,22 +3,21 @@ from typing import Optional
 from datetime import datetime
 
 class VoteBase(BaseModel):
-    is_upvote: bool
-
-class VoteCreate(VoteBase):
     user_id: int
+    is_upvote: bool
     question_id: Optional[int] = None
     answer_id: Optional[int] = None
+
+class VoteCreate(VoteBase):
+    pass
 
 class VoteUpdate(BaseModel):
     is_upvote: Optional[bool] = None
 
 class Vote(VoteBase):
     id: int
-    user_id: int
-    question_id: Optional[int] = None
-    answer_id: Optional[int] = None
     created_at: datetime
+    updated_at: datetime  # Added this field to match schema
 
     class Config:
         from_attributes = True 
