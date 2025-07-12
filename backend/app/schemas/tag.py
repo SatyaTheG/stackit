@@ -18,4 +18,13 @@ class Tag(TagBase):
     created_at: datetime
 
     class Config:
+        from_attributes = True
+
+# Junction table schema
+class QuestionTag(BaseModel):
+    id: int
+    question_id: int
+    tag_id: int
+
+    class Config:
         from_attributes = True 
